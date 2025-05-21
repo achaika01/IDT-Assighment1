@@ -1,20 +1,31 @@
 ﻿use assignment1;
 
-CREATE TABLE students (
+CREATE TABLE students_2024 (
     student_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50),
     age INT,
     major VARCHAR(50)
 );
 
-INSERT INTO students VALUES 
+INSERT INTO students_2024 VALUES 
     (1, 'Anna Petrenko', 20, 'Computer Science'),
     (2,'Ivan Ivanov',22,'Math'),
-    (3,'Olena Kovalenko',21,'Physics'),
-    (4,'Taras Shevchenko',23,'Computer Science'),
-    (5,'Maria Bondarenko',20,'Math');
+    (3,'Olena Kovalenko',21,'Physics');
 
-SELECT * FROM students;
+SELECT * FROM students_2024;
+
+CREATE TABLE students_2025 (
+   student_id INT PRIMARY KEY AUTO_INCREMENT,
+   name VARCHAR(50),
+   age INT,
+   major VARCHAR(50)
+);
+
+INSERT INTO students_2025 VALUES
+  (4,'Taras Shevchenko',23,'Computer Science'),
+  (5,'Maria Bondarenko',20,'Math');
+
+SELECT * FROM students_2025;
 
 CREATE TABLE courses (
     course_id INT PRIMARY KEY,
@@ -80,3 +91,27 @@ INSERT INTO course_professors VALUES
     (105, 3);
 
 SELECT * FROM course_professors;
+WITH all_students as (
+    SELECT * FROM students_2024
+    UNION
+    SELECT * FROM students_2025
+),
+students_info AS (
+    SELECT all_students.student_id,
+           all_students.name  AS students_name,
+           courses.course_id,
+           courses.course_name AS course_name,
+           enrollments.grade   AS grade,
+           professors.name     AS professors_name
+    FROM all_students
+    JOIN enrollments on all_students.student_id = enrollments.student_id
+    JOIN courses on enrollments.course_id = courses.course_id
+    JOIN course_professors on course_professors.course_id = enrollments.course_id
+    JOIN professors on professors.professor_id = course_professors.professor_id)
+SELECT students_name, COUNT(*) AS course_count, AVG(grade) AS avg_grade 
+FROM students_info
+WHERE grade > 80
+GROUP BY students_name
+HAVING students_name IS NOT NULL
+ORDER BY avg_grade DESC 
+LIMIT 10;
